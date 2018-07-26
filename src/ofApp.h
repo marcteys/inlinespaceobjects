@@ -38,6 +38,7 @@ public:
 
 	ofParameter<float>  spacingX;
 	ofParameter<float>  spacingY;
+	ofParameter<float>  lineWidth;
 
 	ofColor bgColor = ofColor::white;
 	ofColor fgColor = ofColor::black;
@@ -80,4 +81,6 @@ public:
 
 
 	void GenerateLines();
+
+
 };

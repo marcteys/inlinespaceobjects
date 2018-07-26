@@ -2,6 +2,11 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+
+
+
+
+
 	ofSetVerticalSync(true);
 	//mesh.load("lofi-bunny.ply");
 //	mesh.load("land.ply");
@@ -43,7 +48,8 @@ void ofApp::setup() {
 	nRayY.set("nRayY", 20, 0, 200);
 	spacingX.set("spacingX", 5, 0, 200);
 	spacingY.set("spacingY", 5, 0, 200);
-
+	lineWidth.set("lineWidth", 1, 0, 20);
+	
 
 	gui = new ofxDatGui();
 	gui->addLabel("gui from of_parameters");
@@ -53,11 +59,13 @@ void ofApp::setup() {
 	gui->addSlider(nRayX);
 	gui->addSlider(nRayY);
 	gui->addSlider(spacingX);
+	gui->addSlider(spacingY);
+	gui->addSlider(lineWidth);
 	gui->addColorPicker("Background", ofColor::white);
 	gui->addColorPicker("Lines", ofColor::black);
-	gui->addSlider(spacingY);
 	gui->addToggle("DisplayRay", displayRay);
 	gui->addToggle("DrawLines", true);
+	gui->onColorPickerEvent(this, &ofApp::onColorPickerEvent);
 	gui->onButtonEvent(this, &ofApp::onButtonEvent);
 	gui->onToggleEvent(this, &ofApp::onToggleEvent);
 	gui->onSliderEvent(this, &ofApp::onSliderEvent);
@@ -75,6 +83,8 @@ void ofApp::update() {
 }
 
 void ofApp::draw() {
+	
+
 	TestTwo();
 
 }
@@ -99,8 +109,12 @@ void ofApp::TestTwo() {
 	ofBackground(bgColor);
 
 	cam.begin();
-	ofSetColor(ofColor::red);
+	ofSetColor(bgColor);
 	//mesh.drawWireframe();
+
+
+	
+	ofEnableDepthTest();
 
 	mesh.draw();
 	
@@ -109,12 +123,20 @@ void ofApp::TestTwo() {
 
 
 	if (displayLines) {
-		cout << "displaylines" << endl;
+		ofPushMatrix();
+		ofTranslate(ofPoint(0, lineWidth, 0));
+		ofSetLineWidth(lineWidth);
 		ofSetColor(fgColor);
 		for (int i = 0; i < lines.size(); i++) {
 			lines.at(i).draw();
 		}
+		ofPopMatrix();
+
 	}
+	
+	
+	ofDisableDepthTest();
+
 
 	ofSetColor(20, 255, 20,100);
 
@@ -256,6 +278,14 @@ void ofApp::onButtonEvent(ofxDatGuiButtonEvent e)
 		GenerateLines();
 
 
+}
+void ofApp::onColorPickerEvent(ofxDatGuiColorPickerEvent e) {
+	if (e.target->getLabel() == "Background") {
+		bgColor = e.color;
+	}
+	if (e.target->getLabel() == "Lines") {
+		fgColor = e.color;
+	}
 }
 
 void ofApp::GenerateLines() {
