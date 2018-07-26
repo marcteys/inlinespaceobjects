@@ -25,96 +25,42 @@ void ofApp::setup() {
 		triangles.push_back(triangle);
 	}
 
-	ofVec3f rayStart;
-	for (int r = 0; r < 20; r ++) {
-		rayStart = ofPoint(10 * r, 200, 10);
-		IsRay tmpRay;
-		tmpRay.set(rayStart, ofVec3f(0, -200, 0));
-		rays.push_back(tmpRay);
-	}
 
 
 
-
-	int x = 340;
-	int y = 100;
-	int p = 40;
+	int x = 0;
+	int y = 0;
+	int p = 0;
 	//ofSetWindowPosition(0, 0);
 	//ofSetWindowShape(1920, 1080);
 
 	ofxDatGuiComponent* component;
 
-	component = new ofxDatGuiButton("Generate");
-	//component->setPosition(x, y);
-	component->onButtonEvent(this, &ofApp::onButtonEvent);
-	components.push_back(component);
 
-	y += component->getHeight() + p;
-	component = new ofxDatGuiToggle("toggle", false);
-	component->setPosition(x, y);
-	component->onToggleEvent(this, &ofApp::onToggleEvent);
-	components.push_back(component);
+	startX.set("Start X", 0, -500, 500);
+	startY.set("Start Y", 0, -500, 500);
+	nRayX.set("nRayX", 20, 0, 200);
+	nRayY.set("nRayY", 20, 0, 200);
+	spacingX.set("spacingX", 5, 0, 200);
+	spacingY.set("spacingY", 5, 0, 200);
 
-	y += component->getHeight() + p;
-	component = new ofxDatGuiWaveMonitor("wave\nmonitor", 3, .5);
-	component->setPosition(x, y);
-	components.push_back(component);
 
-	y += component->getHeight() + p;
-	component = new ofxDatGuiMatrix("matrix", 21, true);
-	component->setPosition(x, y);
-	component->onMatrixEvent(this, &ofApp::onMatrixEvent);
-	components.push_back(component);
-
-	y += component->getHeight() + p;
-	component = new ofxDatGuiTextInput("text input", "# open frameworks #");
-	component->setPosition(x, y);
-	component->onTextInputEvent(this, &ofApp::onTextInputEvent);
-	components.push_back(component);
-
-	y += component->getHeight() + p;
-	component = new ofxDatGuiColorPicker("color picker", ofColor::fromHex(0xFFD00B));
-	component->setPosition(x, y);
-	component->onColorPickerEvent(this, &ofApp::onColorPickerEvent);
-	components.push_back(component);
-
-	y = 100;
-	x += component->getWidth() + p + 60;
-
-	component = new ofxDatGuiFRM();
-	component->setPosition(x, y);
-	components.push_back(component);
-
-	y += component->getHeight() + p;
-	component = new ofxDatGuiSlider("slider", 0, 100, 50);
-	component->setPosition(x, y);
-	component->onSliderEvent(this, &ofApp::onSliderEvent);
-	components.push_back(component);
-
-	y += component->getHeight() + p;
-	// capture the plotter in a variable so we can feed it values later //
-	plotter = new ofxDatGuiValuePlotter("value\nplotter", -100, 100);
-	plotter->setSpeed(2.0f);
-	plotter->setDrawMode(ofxDatGuiGraph::LINES);
-	component = plotter;
-	component->setPosition(x, y);
-	components.push_back(component);
-
-	y += component->getHeight() + p;
-	component = new ofxDatGui2dPad("2d pad");
-	component->setPosition(x, y);
-	component->on2dPadEvent(this, &ofApp::on2dPadEvent);
-	components.push_back(component);
-
-	y += component->getHeight() + p - 9;
-	ofxDatGuiDropdown* dropdown;
-	vector<string> options = { "one", "two", "three", "four" };
-	dropdown = new ofxDatGuiDropdown("dropdown menu", options);
-	dropdown->setPosition(x, y);
-	dropdown->expand();
-	dropdown->onDropdownEvent(this, &ofApp::onDropdownEvent);
-	components.push_back(dropdown);
-
+	gui = new ofxDatGui();
+	gui->addLabel("gui from of_parameters");
+	gui->addButton("Generate");
+	gui->addSlider(startX);
+	gui->addSlider(startY);
+	gui->addSlider(nRayX);
+	gui->addSlider(nRayY);
+	gui->addSlider(spacingX);
+	gui->addColorPicker("Background", ofColor::white);
+	gui->addColorPicker("Lines", ofColor::black);
+	gui->addSlider(spacingY);
+	gui->addToggle("DisplayRay", displayRay);
+	gui->addToggle("DrawLines", true);
+	gui->onButtonEvent(this, &ofApp::onButtonEvent);
+	gui->onToggleEvent(this, &ofApp::onToggleEvent);
+	gui->onSliderEvent(this, &ofApp::onSliderEvent);
 
 }
 
@@ -122,22 +68,14 @@ void ofApp::setup() {
 void ofApp::update() {
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
 
-	/*
 	int x = ofGetMouseX();
 	int y = 400;
 	int z = ofGetMouseY();//400;
-	ray.set(ofPoint(0, 0, 0), ofPoint(x, y, z));*/
 
-
-	float v = ofRandom(plotter->getMin(), plotter->getMax());
-	plotter->setValue(v);
-	for (int i = 0; i<components.size(); i++) components[i]->update();
 }
 
 void ofApp::draw() {
 	TestTwo();
-
-	for (int i = 0; i<components.size(); i++) components[i]->draw();
 
 }
 
@@ -146,182 +84,50 @@ void ofApp::BuildLineMesh() {
 
 }*/
 
-//--------------------------------------------------------------
-void ofApp::TestTwo() {
-	ofBackgroundGradient(ofColor(64), ofColor(0));
 
-	cam.begin();
-	ofSetColor(20, 20, 20);
-	mesh.drawWireframe();
-
-
-	IntersectionData id;
-
-	int cnt = 0;
-	ofPoint temp;
-	IsRay rayy;
-	ofVec3f rayStart;
-	ofSetColor(255, 255, 255);
-
-	for (int r = 0; r < rays.size(); r ++) {
+void ofApp::DisplayRay() {
+	ofSetColor(255, 20, 20,20);
+	for (int r = 0; r < rays.size(); r++) {
 		IsRay *ray = &rays.at(r);
 		ray->draw();
 	}
-
-	for (int i = 0; i<triangles.size(); i++) {
-		IsTriangle *tmpTri = &triangles.at(i);
-		for (int r = 0; r < rays.size(); r ++) {
-			IsRay *ray = &rays.at(r);
-
-			if (abs(tmpTri->getP0().x - ray->getP0().x) < 8 && abs(tmpTri->getP0().z - ray->getP0().z) < 8) {
-				id = is.RayTriangleIntersection(triangles.at(i), *ray);
-				//Draw rays
-
-				if (id.isIntersection) {
-
-					ofSetColor(255, 0, 0, 100);
-					ofDrawSphere(id.pos, 1);
-					temp = id.pos;
-					ofSetColor(200, 200, 200, 150);
-				}
-				else {
-					ofSetColor(0, 0, 0, 0);
-				}
-
-				triangles.at(i).draw();
-			}
-
-			//	ray->getP0().x - tmpTri->getP0().x = minX;
-
-		}
-
-
-	}
-
-
-
-	cam.end();
-
-	//ofDrawBitmapStringHighlight("pos " + ofToString(ofGetMouseX()) + ", 400 , " + ofToString(ofGetMouseY()), 10, 30);
-
-
-
-
-	// Get minimum 
-	/*
-	float minX = 200;
-	float minY = 200;
-	float minZ = 200;
-	float x = abs(tmpTri->getP0().x - ray->getP0().x);
-	if (x < minX)
-	minX = x;
-
-	float y = abs(tmpTri->getP0().y - ray->getP0().y);
-	if (y < minY)
-	minY = y;
-
-	float z = abs(tmpTri->getP0().z - ray->getP0().z);
-	if (z < minZ)
-	minY = z;
-	*/
 }
 
 
-void ofApp::TestOne() {
-	ofBackgroundGradient(ofColor(64), ofColor(0));
+//--------------------------------------------------------------
+void ofApp::TestTwo() {
+	ofBackground(bgColor);
 
-	ofSetColor(255);
 	cam.begin();
+	ofSetColor(ofColor::red);
+	//mesh.drawWireframe();
 
-	/*
-	ofSetColor(ofColor::gray);
-	mesh.drawWireframe();
-
-	glPointSize(2);
-	ofSetColor(ofColor::white);
-	mesh.drawVertices();
-	*/
+	mesh.draw();
+	
+	if (displayRay)
+		DisplayRay();
 
 
-	/*
-
-	// DISPLAy closest point
-	int n = mesh.getNumVertices();
-	float nearestDistance = 0;
-	ofVec2f nearestVertex;
-	int nearestIndex = 0;
-	ofVec2f mouse(mouseX, mouseY);
-	for (int i = 0; i < n; i++) {
-	ofVec3f cur = cam.worldToScreen(mesh.getVertex(i));
-	float distance = cur.distance(mouse);
-	if (i == 0 || distance < nearestDistance) {
-	nearestDistance = distance;
-	nearestVertex = cur;
-	nearestIndex = i;
-	ofVec3f v = mesh.getVertex(i);
-	tmpRayStart = v;
-	tmpRayEnd = tmpRayStart;
-	tmpRayEnd.z += 0.1;
-	ofPushStyle();
-	ofSetColor(100, 100, 255);
-	ofDrawLine(tmpRayStart, tmpRayEnd);
-	ofPopStyle();
-	}
-	}
-	*/
-
-
-
-	// ofxIntersection
-	IntersectionData id;
-
-
-	ofPoint rayStart;
-
-	for (int i = 0; i<mesh.getUniqueFaces().size(); i++) {
-		IsTriangle triangle;
-		ofMeshFace face = mesh.getUniqueFaces().at(i);
-		triangle.set(face);
-		IsRay ray;
-
-		//Draw rays
-		for (int r = 0; r < 10; r += 2) {
-			/*
-			IsLine l1;
-			l1.set(ofPoint(10 + i, 200, 10), ofPoint(10 + i, -200, 10));
-			l1.draw();*/
-			rayStart = ofPoint(10 + r, 200, 10);
-
-			if (rayStart.distance(triangle.getP0()) < 10)
-				continue;
-
-			ray.set(rayStart, ofVec3f(0, -200, 0));
-			ray.draw();
+	if (displayLines) {
+		cout << "displaylines" << endl;
+		ofSetColor(fgColor);
+		for (int i = 0; i < lines.size(); i++) {
+			lines.at(i).draw();
 		}
-
 	}
 
+	ofSetColor(20, 255, 20,100);
 
+	ofLine(ofPoint(startX, 150, startY), ofPoint(startX, -50, startY));
+	ofLine(ofPoint(startX + nRayX * spacingX, 150, startY), ofPoint(startX + nRayX * spacingX, -50, startY));
+	ofLine(ofPoint(startX + nRayX * spacingX, 150, startY + nRayY * spacingY), ofPoint(startX + nRayX * spacingX, -50, startY + nRayY * spacingY));
+	ofLine(ofPoint(startX, 150, startY + nRayY * spacingY), ofPoint(startX, -50, startY + nRayY * spacingY));
 
-
+	//ofBox(ofPoint(startX + (startX + nRayX * spacingX) /2, 150, startY + (startY + nRayY * spacingY)/2), startX + nRayX * spacingX, 100, startY + nRayY * spacingY);
+	
 	cam.end();
 
-
-
-	//	ofSetColor(ofColor::gray);
-	//ofDrawLine(nearestVertex, mouse);
-
-
-	//	ofNoFill();
-	//	ofSetColor(ofColor::yellow);
-	//	ofSetLineWidth(2);
-	//	ofDrawCircle(nearestVertex, 4);
-	//	ofSetLineWidth(1);
-
-	//	ofVec2f offset(10, -10);
-	//ofDrawBitmapStringHighlight(ofToString(nearestIndex), mouse + offset);
 }
-
 
 
 float ofApp::sign(ofPoint p1, ofPoint p2, ofPoint p3)
@@ -445,45 +251,109 @@ void ofApp::dragEvent(ofDragInfo dragInfo) {
 
 void ofApp::onButtonEvent(ofxDatGuiButtonEvent e)
 {
-	
 
-
+	if (e.target->getLabel() == "Generate")
+		GenerateLines();
 
 
 }
 
+void ofApp::GenerateLines() {
+
+	rays.clear();
+
+	//Creating ray
+	ofPoint rayStart;
+
+	IntersectionData id;
+	lines.clear();
+
+	ofPoint prevPoint;
+	prevPoint.set(ofPoint(0, 0, 0));
+	IsLine tempLine;
+	tempLine.set(prevPoint, prevPoint);
+
+	bool skipThisLine = false;
+	for (int x = 0; x < nRayX; x++) {
+		skipThisLine = true;
+		for (int y = 0; y < nRayY;y++) {
+
+			rayStart = ofPoint(startX  + x *spacingX, 200, startY + y *spacingY);
+			IsRay tmpRay;
+			tmpRay.set(rayStart, ofPoint(0, -200, 0));
+			rays.push_back(tmpRay);
+
+			for (int i = 0; i<triangles.size(); i++) {
+				IsTriangle *tmpTri = &triangles.at(i);
+				if (abs(tmpTri->getP0().x - tmpRay.getP0().x) < 8 && abs(tmpTri->getP0().z - tmpRay.getP0().z) < 8) {
+					id = is.RayTriangleIntersection(triangles.at(i), tmpRay);
+					if (id.isIntersection) {
+						if (!skipThisLine) {
+							tempLine.set(prevPoint, id.pos);
+							lines.push_back(tempLine);
+						}
+						else {
+							skipThisLine = false;
+						}
+						prevPoint = id.pos;
+					}
+
+				}
+					//	triangles.at(i).draw();
+			}
+
+
+		} // end x y loop
+	}
+
+	// Colliding with the mesh
+
+
+	/*
+	int count = 0;
+	for (int r = 0; r < rays.size(); r++) {
+		IsRay *ray = &rays.at(r);
+
+		for (int i = 0; i<triangles.size(); i++) {
+			IsTriangle *tmpTri = &triangles.at(i);
+			if (abs(tmpTri->getP0().x - ray->getP0().x) < 8 && abs(tmpTri->getP0().z - ray->getP0().z) < 8) {
+				id = is.RayTriangleIntersection(triangles.at(i), *ray);
+				if (id.isIntersection) {
+					if (count == 0) {
+						
+					}
+					else {
+						if (count == nRayY) {
+							count = 0;
+						}
+						else {
+							tempLine.set(prevPoint, id.pos);
+							lines.push_back(tempLine);
+						}
+						prevPoint = id.pos;
+
+					}
+
+				}
+				//	triangles.at(i).draw();
+			}
+		}
+		count++;
+	}
+	*/
+
+}
+
+
 void ofApp::onToggleEvent(ofxDatGuiToggleEvent e)
 {
-	cout << "onToggleEvent: " << e.target->getLabel() << "::" << e.target->getChecked() << endl;
+	if(e.target->getLabel() == "DisplayRay")
+		displayRay = e.target->getChecked();
+	else if(e.target->getLabel() == "DrawLines")
+		displayLines = e.target->getChecked();
 }
 
 void ofApp::onSliderEvent(ofxDatGuiSliderEvent e)
 {
 	cout << "onSliderEvent: " << e.value << "::" << e.scale << endl;
 }
-
-void ofApp::onDropdownEvent(ofxDatGuiDropdownEvent e)
-{
-	cout << "onDropdownEvent: " << e.child << endl;
-}
-
-void ofApp::onMatrixEvent(ofxDatGuiMatrixEvent e)
-{
-	cout << "onMatrixEvent: " << e.child << "::" << e.enabled << endl;
-}
-
-void ofApp::onColorPickerEvent(ofxDatGuiColorPickerEvent e)
-{
-	cout << "onColorPickerEvent: " << e.color << endl;
-}
-
-void ofApp::on2dPadEvent(ofxDatGui2dPadEvent e)
-{
-	cout << "on2dPadEvent: " << e.x << "::" << e.y << endl;
-}
-
-void ofApp::onTextInputEvent(ofxDatGuiTextInputEvent e)
-{
-	cout << "onButtonEvent: " << e.text << endl;
-}
-
