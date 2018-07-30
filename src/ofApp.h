@@ -9,6 +9,13 @@
 
 class ofApp : public ofBaseApp {
 public:
+	enum LinesType {
+		Path,
+		Polyline,
+		Lines
+	};
+
+
 	void setup();
 	void update();
 	void draw();
@@ -52,12 +59,26 @@ public:
 	ofxAssimpModelLoader landscape;
 	vector<ofMeshFace> faces;
 	vector<IsTriangle> triangles;
-
-
 	vector<IsRay> rays;
-	vector<IsLine> lines;
-	
+
 	ofxIntersection is;
+
+
+	// ofPath
+	vector<ofPath> paths;
+	void GeneratePathLines();
+	void DrawPathlines();
+
+
+	// PolyLine
+	vector<ofPolyline> polyLines;
+	void GeneratePolylines();
+	void DrawPolylines();
+
+	//Lines
+	vector<IsLine> lines;
+	void GenerateLines();
+	void DrawLines();
 
 	ofLight light;
 	ofMaterial mat;
@@ -76,11 +97,17 @@ public:
 	void onTextInputEvent(ofxDatGuiTextInputEvent e);
 
 	bool displayRay;
+	bool drawMesh;
+	LinesType lineType = Polyline;
 	bool displayLines = true;
 	void DisplayRay();
 
+	
+	// PDF export
+	vector <ofImage> frames;
+	ofVideoGrabber grabber;
 
-	void GenerateLines();
+	bool						oneShot;
 
 
 };

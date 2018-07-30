@@ -3,7 +3,8 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-
+	oneShot = false;
+	drawMesh = true;
 
 
 
@@ -44,7 +45,7 @@ void ofApp::setup() {
 
 	startX.set("Start X", 0, -500, 500);
 	startY.set("Start Y", 0, -500, 500);
-	nRayX.set("nRayX", 20, 0, 200);
+	nRayX.set("nRayX", 3, 0, 200);
 	nRayY.set("nRayY", 20, 0, 200);
 	spacingX.set("spacingX", 5, 0, 200);
 	spacingY.set("spacingY", 5, 0, 200);
@@ -65,6 +66,7 @@ void ofApp::setup() {
 	gui->addColorPicker("Lines", ofColor::black);
 	gui->addToggle("DisplayRay", displayRay);
 	gui->addToggle("DrawLines", true);
+	gui->addToggle("DrawMesh", true);
 	gui->onColorPickerEvent(this, &ofApp::onColorPickerEvent);
 	gui->onButtonEvent(this, &ofApp::onButtonEvent);
 	gui->onToggleEvent(this, &ofApp::onToggleEvent);
@@ -84,9 +86,15 @@ void ofApp::update() {
 
 void ofApp::draw() {
 	
+	if (oneShot) {
+		ofBeginSaveScreenAsPDF("screenshot-" + ofGetTimestampString() + ".pdf",false, true);
+	}
 
 	TestTwo();
-
+	if (oneShot) {
+		ofEndSaveScreenAsPDF();
+		oneShot = false;
+	}
 }
 
 /*
@@ -109,18 +117,130 @@ void ofApp::TestTwo() {
 	ofBackground(bgColor);
 
 	cam.begin();
-	ofSetColor(bgColor);
-	//mesh.drawWireframe();
+	if (drawMesh) {
+		ofSetColor(ofColor::black,100);
+		mesh.drawWireframe();
+	}
 
 
 	
 	ofEnableDepthTest();
 
-	mesh.draw();
+
+	switch (lineType) {
+	case Polyline:
+		DrawPolylines();
+		break;
+	case Lines:
+		DrawLines();
+		break;
+	case Path:
+		DrawPathlines();
+		break;
+	}
 	
 	if (displayRay)
 		DisplayRay();
 
+	
+	ofDisableDepthTest();
+
+
+	ofSetColor(ofColor::red);
+
+	ofLine(ofPoint(startX, 150, startY), ofPoint(startX, -50, startY));
+	ofLine(ofPoint(startX + nRayX * spacingX, 150, startY), ofPoint(startX + nRayX * spacingX, -50, startY));
+	ofLine(ofPoint(startX + nRayX * spacingX, 150, startY + nRayY * spacingY), ofPoint(startX + nRayX * spacingX, -50, startY + nRayY * spacingY));
+	ofLine(ofPoint(startX, 150, startY + nRayY * spacingY), ofPoint(startX, -50, startY + nRayY * spacingY));
+
+	//ofBox(ofPoint(startX + (startX + nRayX * spacingX) /2, 150, startY + (startY + nRayY * spacingY)/2), startX + nRayX * spacingX, 100, startY + nRayY * spacingY);
+	
+	cam.end();
+
+}
+
+
+
+void ofApp::DrawPathlines() {
+	ofSetLineWidth(lineWidth);
+	ofSetColor(ofColor::red);
+	ofFill();
+	for (int i = 0; i < paths.size(); i++) {
+		paths.at(i).draw();
+	}
+}
+
+ofPath polysToPath(const vector<ofPolyline> &polylines) {
+	ofPath path;
+	for (int outline = 0; outline < polylines.size(); ++outline) {
+		for (int i = 0; i < polylines[outline].getVertices().size(); i++) {
+			if (i == 0)
+				path.moveTo(polylines[outline].getVertices()[i].x, polylines[outline].getVertices()[i].y);
+			else
+				path.lineTo(polylines[outline].getVertices()[i].x, polylines[outline].getVertices()[i].y);
+		}
+		path.close();
+	}
+	return path;
+}
+
+
+void ofApp::DrawPolylines() {
+	ofSetLineWidth(lineWidth);
+
+
+	
+	// 1st method
+	/*
+	for (int i = 0; i < polyLines.size(); i++) {
+		polyLines.at(i).draw();
+	}*/
+
+	// 2nd method
+	//polysToPath(polyLines).draw();
+	
+
+	//3rd method
+	for (int i = 0; i < polyLines.size(); i++) {
+		ofPolyline polyline = polyLines.at(i);
+		vector<ofPoint>& vertices = polyline.getVertices();
+		ofSetPolyMode(OF_POLY_WINDING_NONZERO);
+
+		ofFill();
+		ofSetColor(bgColor);
+		ofBeginShape();
+		for (int j = 0; j < vertices.size(); j++) {
+			if (oneShot) {
+				ofVec3f v2d = cam.worldToScreen(vertices[j]);
+				ofVertex(v2d.x, v2d.y);
+			}
+			else {
+				ofVertex(vertices[j]);
+			}
+		}
+		ofEndShape();
+
+		//same thing repeted
+		ofNoFill();
+		ofSetColor(fgColor);
+		ofBeginShape();
+		for (int j = 0; j < vertices.size(); j++) {
+			if (oneShot) {
+				ofVec3f v2d = cam.worldToScreen(vertices[j]);
+				ofVertex(v2d.x, v2d.y);
+			}
+			else {
+				ofVertex(vertices[j]);
+			}
+		}
+		ofEndShape();
+	}
+}
+
+
+void ofApp::DrawLines() {
+
+	mesh.draw();
 
 	if (displayLines) {
 		ofPushMatrix();
@@ -133,23 +253,8 @@ void ofApp::TestTwo() {
 		ofPopMatrix();
 
 	}
-	
-	
-	ofDisableDepthTest();
-
-
-	ofSetColor(20, 255, 20,100);
-
-	ofLine(ofPoint(startX, 150, startY), ofPoint(startX, -50, startY));
-	ofLine(ofPoint(startX + nRayX * spacingX, 150, startY), ofPoint(startX + nRayX * spacingX, -50, startY));
-	ofLine(ofPoint(startX + nRayX * spacingX, 150, startY + nRayY * spacingY), ofPoint(startX + nRayX * spacingX, -50, startY + nRayY * spacingY));
-	ofLine(ofPoint(startX, 150, startY + nRayY * spacingY), ofPoint(startX, -50, startY + nRayY * spacingY));
-
-	//ofBox(ofPoint(startX + (startX + nRayX * spacingX) /2, 150, startY + (startY + nRayY * spacingY)/2), startX + nRayX * spacingX, 100, startY + nRayY * spacingY);
-	
-	cam.end();
-
 }
+
 
 
 float ofApp::sign(ofPoint p1, ofPoint p2, ofPoint p3)
@@ -217,6 +322,9 @@ inline unsigned int s3dVecInTriangle3f2(S3Dvecfv p, ofVec3f v0, S3Dvecfv v1, S3D
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
 
+	if (key == 's') {
+		oneShot = true;
+	}
 }
 
 //--------------------------------------------------------------
@@ -274,8 +382,20 @@ void ofApp::dragEvent(ofDragInfo dragInfo) {
 void ofApp::onButtonEvent(ofxDatGuiButtonEvent e)
 {
 
-	if (e.target->getLabel() == "Generate")
-		GenerateLines();
+	if (e.target->getLabel() == "Generate") {
+		switch (lineType) {
+		case Polyline:
+			GeneratePolylines();
+			break;
+		case Lines:
+			GenerateLines();
+			break;
+		case Path:
+			GeneratePathLines();
+			break;
+		}
+	}
+		
 
 
 }
@@ -287,6 +407,107 @@ void ofApp::onColorPickerEvent(ofxDatGuiColorPickerEvent e) {
 		fgColor = e.color;
 	}
 }
+
+
+
+
+void ofApp::GeneratePathLines() {
+
+	rays.clear();
+
+	//Creating ray
+	ofPoint rayStart;
+
+	IntersectionData id;
+	polyLines.clear();
+
+	ofPath tmpPath;
+	bool skipThisLine = false;
+	for (int x = 0; x < nRayX; x++) {
+		skipThisLine = true;
+		for (int y = 0; y < nRayY; y++) {
+
+			rayStart = ofPoint(startX + x *spacingX, 200, startY + y *spacingY);
+			IsRay tmpRay;
+			tmpRay.set(rayStart, ofPoint(0, -200, 0));
+			rays.push_back(tmpRay);
+
+			for (int i = 0; i<triangles.size(); i++) {
+				IsTriangle *tmpTri = &triangles.at(i);
+				if (abs(tmpTri->getP0().x - tmpRay.getP0().x) < 8 && abs(tmpTri->getP0().z - tmpRay.getP0().z) < 8) {
+					id = is.RayTriangleIntersection(triangles.at(i), tmpRay);
+					if (id.isIntersection) {
+						if (!skipThisLine) {
+							tmpPath.lineTo(id.pos);
+						}
+						else {
+							skipThisLine = false;
+							tmpPath.close();
+							paths.push_back(tmpPath);
+						}
+					}
+				}
+				//	triangles.at(i).draw();
+			}
+
+
+		} // end x y loop
+	}
+
+	// Colliding with the mesh
+}
+
+
+
+void ofApp::GeneratePolylines() {
+
+	rays.clear();
+
+	//Creating ray
+	ofPoint rayStart;
+
+	IntersectionData id;
+	polyLines.clear();
+
+	ofPoint lastHit;
+
+	for (int x = 0; x < nRayX; x++) {
+		ofPolyline tempLine;
+		bool tmpLineInit = false;
+		
+		for (int y = 0; y < nRayY; y++) {
+
+			rayStart = ofPoint(startX + x *spacingX, 200, startY + y *spacingY);
+			IsRay tmpRay;
+			tmpRay.set(rayStart, ofPoint(0, -200, 0));
+			rays.push_back(tmpRay);
+
+			for (int i = 0; i<triangles.size(); i++) {
+				IsTriangle *tmpTri = &triangles.at(i);
+				if (abs(tmpTri->getP0().x - tmpRay.getP0().x) < 8 && abs(tmpTri->getP0().z - tmpRay.getP0().z) < 8) {
+					id = is.RayTriangleIntersection(triangles.at(i), tmpRay);
+					if (id.isIntersection) {
+						if (!tmpLineInit) { // the the first ray, at the bottom
+							tempLine.addVertex(id.pos.x, -200, id.pos.z);
+							tmpLineInit = true;
+						}
+						tempLine.addVertex(id.pos);
+						lastHit = id.pos;
+					}
+				}
+				//	triangles.at(i).draw();
+			}
+		} // end  y loop
+
+		tempLine.addVertex(lastHit.x, -200, lastHit.z);
+		tempLine.close();
+		polyLines.push_back(tempLine); // end tmp line
+
+	} // end x loop
+
+	// Colliding with the mesh
+}
+
 
 void ofApp::GenerateLines() {
 
@@ -379,8 +600,12 @@ void ofApp::onToggleEvent(ofxDatGuiToggleEvent e)
 {
 	if(e.target->getLabel() == "DisplayRay")
 		displayRay = e.target->getChecked();
-	else if(e.target->getLabel() == "DrawLines")
+	else if (e.target->getLabel() == "DrawLines")
 		displayLines = e.target->getChecked();
+	else if (e.target->getLabel() == "DrawMesh")
+		drawMesh = e.target->getChecked();
+
+	
 }
 
 void ofApp::onSliderEvent(ofxDatGuiSliderEvent e)
