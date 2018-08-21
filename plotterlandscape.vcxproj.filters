@@ -505,6 +505,12 @@
 		<ClCompile Include="..\..\..\addons\ofxBullet\libs\bullet2.8.2\include\LinearMath\btVector3.cpp">
 			<Filter>addons\ofxBullet\libs\bullet2.8.2\include\LinearMath</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxClipper\src\ofxClipper.cpp">
+			<Filter>addons\ofxClipper\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxClipper\libs\clipper\src\cpp\clipper.cpp">
+			<Filter>addons\ofxClipper\libs\clipper\src\cpp</Filter>
+		</ClCompile>
 		<ClCompile Include="..\..\..\addons\ofxDatGui\src\core\ofxDatGuiComponent.cpp">
 			<Filter>addons\ofxDatGui\src\core</Filter>
 		</ClCompile>
@@ -662,6 +668,24 @@
 		</Filter>
 		<Filter Include="addons\ofxBullet\libs\bullet2.8.2\include\vectormath\sse">
 			<UniqueIdentifier>{796E08E9-E73A-B0F2-5B61-9B62}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxClipper">
+			<UniqueIdentifier>{65BD6FE7-26D7-8DD7-98B5-C486}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxClipper\src">
+			<UniqueIdentifier>{65085A6C-1833-ECBD-46B3-9D54}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxClipper\libs">
+			<UniqueIdentifier>{3095052A-0C99-2EB4-63A6-A153}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxClipper\libs\clipper">
+			<UniqueIdentifier>{087D1414-F783-C470-99C2-8CE0}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxClipper\libs\clipper\src">
+			<UniqueIdentifier>{C3499495-A68A-CE6C-B130-4646}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxClipper\libs\clipper\src\cpp">
+			<UniqueIdentifier>{3E9BCD20-FCB8-57AE-3C62-9E92}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxDatGui">
 			<UniqueIdentifier>{B36B06DF-1AA4-00D4-5A1B-6893}</UniqueIdentifier>
@@ -1624,6 +1648,12 @@
 		</ClInclude>
 		<ClInclude Include="..\..\..\addons\ofxBullet\libs\bullet2.8.2\include\vectormath\vmInclude.h">
 			<Filter>addons\ofxBullet\libs\bullet2.8.2\include\vectormath</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxClipper\src\ofxClipper.h">
+			<Filter>addons\ofxClipper\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxClipper\libs\clipper\src\cpp\clipper.hpp">
+			<Filter>addons\ofxClipper\libs\clipper\src\cpp</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGui2dPad.h">
 			<Filter>addons\ofxDatGui\src\components</Filter>

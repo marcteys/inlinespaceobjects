@@ -1,5 +1,6 @@
 ofxAssimpModelLoader
 ofxBullet
+ofxClipper
 ofxDatGui
 ofxIntersection
 ofxRay

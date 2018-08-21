@@ -5,7 +5,7 @@
 #include "ofxIntersection.h"
 #include "ofxAssimpModelLoader.h"
 #include "ofxDatGui.h"
-
+#include "ofxClipper.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -46,6 +46,7 @@ public:
 	ofParameter<float>  spacingX;
 	ofParameter<float>  spacingY;
 	ofParameter<float>  lineWidth;
+	ofParameter<int>  simplifySkip;
 
 	ofColor bgColor = ofColor::white;
 	ofColor fgColor = ofColor::black;
@@ -72,6 +73,7 @@ public:
 
 	// PolyLine
 	vector<ofPolyline> polyLines;
+	vector<ofPolyline> localPolyLines;
 	void GeneratePolylines();
 	void DrawPolylines();
 
@@ -101,13 +103,18 @@ public:
 	LinesType lineType = Polyline;
 	bool displayLines = true;
 	void DisplayRay();
+	void ConvertWorldToLocalPolyLines();
+	void DrawLocalPolyLines();
 
-	
 	// PDF export
 	vector <ofImage> frames;
 	ofVideoGrabber grabber;
 
 	bool						oneShot;
+	
+	
+	ofxClipper clipper;
+	int distOffset = 100; // 100000
 
-
+	bool toPolyline;
 };
