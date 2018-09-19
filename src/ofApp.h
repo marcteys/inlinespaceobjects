@@ -6,6 +6,8 @@
 #include "ofxAssimpModelLoader.h"
 #include "ofxDatGui.h"
 #include "ofxClipper.h"
+#include "ofxXmlSettings.h"
+#include "ofxCameraSaveLoad.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -15,10 +17,16 @@ public:
 		Lines
 	};
 
-
 	void setup();
 	void update();
 	void draw();
+	void Load();
+	void Save();
+
+	ofxXmlSettings settings;
+
+
+
 
 	void keyPressed(int key);
 	void keyReleased(int key);
@@ -48,6 +56,11 @@ public:
 	ofParameter<float>  lineWidth;
 	ofParameter<int>  simplifySkip;
 
+	ofParameter<string>  filename;
+
+
+	ofParameter<int> distOffset; // 100000
+
 	ofColor bgColor = ofColor::white;
 	ofColor fgColor = ofColor::black;
 
@@ -73,7 +86,6 @@ public:
 
 	// PolyLine
 	vector<ofPolyline> polyLines;
-	vector<ofPolyline> localPolyLines;
 	void GeneratePolylines();
 	void DrawPolylines();
 
@@ -103,8 +115,7 @@ public:
 	LinesType lineType = Polyline;
 	bool displayLines = true;
 	void DisplayRay();
-	void ConvertWorldToLocalPolyLines();
-	void DrawLocalPolyLines();
+
 
 	// PDF export
 	vector <ofImage> frames;
@@ -113,8 +124,30 @@ public:
 	bool						oneShot;
 	
 	
-	ofxClipper clipper;
-	int distOffset = 100; // 100000
 
 	bool toPolyline;
+
+	// Masking stuff
+	void ConvertWorldToLocalPolyLines();
+	void DrawLocalPolyLines();
+	void CreateMask();
+
+
+
+	// clipper
+	ofxClipper clipper;
+
+	bool displayCrop = false;
+	void LinesToCrop();
+	void DrawFinalLines();
+
+	vector<ofPolyline> localPolyLines;
+	vector<ofPolyline> allMaskedLines;
+
+	//	ofxPolylines clipMasks;
+	vector<ofPolyline> allClips;
+
+	int idebug = 0;
+	bool inverse = true;
+
 };

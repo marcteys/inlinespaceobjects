@@ -505,6 +505,9 @@
 		<ClCompile Include="..\..\..\addons\ofxBullet\libs\bullet2.8.2\include\LinearMath\btVector3.cpp">
 			<Filter>addons\ofxBullet\libs\bullet2.8.2\include\LinearMath</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxCameraSaveLoad\src\ofxCameraSaveLoad.cpp">
+			<Filter>addons\ofxCameraSaveLoad\src</Filter>
+		</ClCompile>
 		<ClCompile Include="..\..\..\addons\ofxClipper\src\ofxClipper.cpp">
 			<Filter>addons\ofxClipper\src</Filter>
 		</ClCompile>
@@ -555,6 +558,18 @@
 		</ClCompile>
 		<ClCompile Include="..\..\..\addons\ofxSvg\libs\svgTiny\src\svgtiny_list.cpp">
 			<Filter>addons\ofxSvg\libs\svgTiny\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxXmlSettings\src\ofxXmlSettings.cpp">
+			<Filter>addons\ofxXmlSettings\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxXmlSettings\libs\tinyxml.cpp">
+			<Filter>addons\ofxXmlSettings\libs</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxXmlSettings\libs\tinyxmlerror.cpp">
+			<Filter>addons\ofxXmlSettings\libs</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxXmlSettings\libs\tinyxmlparser.cpp">
+			<Filter>addons\ofxXmlSettings\libs</Filter>
 		</ClCompile>
 	</ItemGroup>
 	<ItemGroup>
@@ -669,6 +684,12 @@
 		<Filter Include="addons\ofxBullet\libs\bullet2.8.2\include\vectormath\sse">
 			<UniqueIdentifier>{796E08E9-E73A-B0F2-5B61-9B62}</UniqueIdentifier>
 		</Filter>
+		<Filter Include="addons\ofxCameraSaveLoad">
+			<UniqueIdentifier>{47019832-8095-B242-8FAB-84B3}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxCameraSaveLoad\src">
+			<UniqueIdentifier>{B223A27B-3563-869E-1E21-5AAF}</UniqueIdentifier>
+		</Filter>
 		<Filter Include="addons\ofxClipper">
 			<UniqueIdentifier>{65BD6FE7-26D7-8DD7-98B5-C486}</UniqueIdentifier>
 		</Filter>
@@ -737,6 +758,15 @@
 		</Filter>
 		<Filter Include="addons\ofxSvg\libs\svgTiny\src">
 			<UniqueIdentifier>{668F2528-598B-D351-B74F-9E6F}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxXmlSettings">
+			<UniqueIdentifier>{877F005D-13E6-0592-1D97-F2E3}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxXmlSettings\src">
+			<UniqueIdentifier>{CCB2AC63-49D2-977C-CFE8-AEAD}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxXmlSettings\libs">
+			<UniqueIdentifier>{687714A8-1662-FA1C-261F-50F0}</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
@@ -1649,6 +1679,9 @@
 		<ClInclude Include="..\..\..\addons\ofxBullet\libs\bullet2.8.2\include\vectormath\vmInclude.h">
 			<Filter>addons\ofxBullet\libs\bullet2.8.2\include\vectormath</Filter>
 		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxCameraSaveLoad\src\ofxCameraSaveLoad.h">
+			<Filter>addons\ofxCameraSaveLoad\src</Filter>
+		</ClInclude>
 		<ClInclude Include="..\..\..\addons\ofxClipper\src\ofxClipper.h">
 			<Filter>addons\ofxClipper\src</Filter>
 		</ClInclude>
@@ -1747,6 +1780,12 @@
 		</ClInclude>
 		<ClInclude Include="..\..\..\addons\ofxSvg\libs\svgTiny\src\svgtiny_internal.h">
 			<Filter>addons\ofxSvg\libs\svgTiny\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxXmlSettings\src\ofxXmlSettings.h">
+			<Filter>addons\ofxXmlSettings\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxXmlSettings\libs\tinyxml.h">
+			<Filter>addons\ofxXmlSettings\libs</Filter>
 		</ClInclude>
 	</ItemGroup>
 	<ItemGroup>

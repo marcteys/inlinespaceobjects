@@ -1,7 +1,9 @@
 ofxAssimpModelLoader
 ofxBullet
+ofxCameraSaveLoad
 ofxClipper
 ofxDatGui
 ofxIntersection
 ofxRay
 ofxSvg
+ofxXmlSettings

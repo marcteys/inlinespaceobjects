@@ -44,19 +44,26 @@ void ofApp::setup() {
 
 	startX.set("Start X", 0, -500, 500);
 	startY.set("Start Y", 0, -500, 500);
-	nRayX.set("nRayX", 5, 0, 200);
-	nRayY.set("nRayY", 20, 0, 200);
+	nRayX.set("nRayX", 40, 0, 200);
+	nRayY.set("nRayY", 40, 0, 200);
 	spacingX.set("spacingX", 5, 0, 200);
 	spacingY.set("spacingY", 5, 0, 200);
 	lineWidth.set("lineWidth", 1, 0, 20);
 	simplifySkip.set("simplifySkip", 1, 1, 20);
-	
+	distOffset.set("dist offset", 100, 10, 100000);
 
 	gui = new ofxDatGui();
 	gui->addLabel("gui from of_parameters");
 	gui->addButton("Generate");
+	gui->addToggle("Inverse", inverse);
 	gui->addButton("Local");
+	//gui->addButton("CreateMask");
 	gui->addButton("World");
+	gui->addBreak();
+	gui->addButton("Calculate Final");
+	gui->addButton("Draw Final");
+	gui->addBreak();
+	gui->addBreak();
 	gui->addBreak();
 	gui->addSlider(startX);
 	gui->addSlider(startY);
@@ -65,15 +72,25 @@ void ofApp::setup() {
 	gui->addSlider(spacingX);
 	gui->addSlider(spacingY);
 	gui->addSlider(lineWidth);
+	gui->addSlider(distOffset);
+	
 	gui->addColorPicker("Background", ofColor::white);
 	gui->addColorPicker("Lines", ofColor::black);
+	gui->addToggle("displayCrop", displayCrop);
 	gui->addToggle("DisplayRay", displayRay);
 	gui->addToggle("DrawLines", true);
 	gui->addToggle("DrawMesh", true);
+
 	gui->onColorPickerEvent(this, &ofApp::onColorPickerEvent);
 	gui->onButtonEvent(this, &ofApp::onButtonEvent);
 	gui->onToggleEvent(this, &ofApp::onToggleEvent);
 	gui->onSliderEvent(this, &ofApp::onSliderEvent);
+	gui->addBreak();
+	gui->addTextInput("FileName", filename);
+	gui->addButton("Save");
+	gui->addButton("Load");
+
+	GeneratePolylines();
 }
 
 //--------------------------------------------------------------
@@ -90,8 +107,10 @@ void ofApp::draw() {
 		ofBeginSaveScreenAsPDF("screenshot-" + ofGetTimestampString() + ".pdf",false, true);
 	}
 
-	if (toPolyline)
-		DrawLocalPolyLines();
+	 if (displayCrop)
+		DrawFinalLines();
+	 else if (toPolyline)
+		 DrawLocalPolyLines();
 	else
 		TestTwo();
 
@@ -109,6 +128,7 @@ void ofApp::BuildLineMesh() {
 
 
 void ofApp::DrawLocalPolyLines() {
+
 	ofSetColor(ofColor::black);
 	ofNoFill();
 	ofSetLineWidth(lineWidth);
@@ -142,15 +162,15 @@ void ofApp::TestTwo() {
 
 
 	switch (lineType) {
-	case Polyline:
-		DrawPolylines();
-		break;
-	case Lines:
-		DrawLines();
-		break;
-	case Path:
-		DrawPathlines();
-		break;
+		case Polyline:
+			DrawPolylines();
+			break;
+		case Lines:
+			DrawLines();
+			break;
+		case Path:
+			DrawPathlines();
+			break;
 	}
 	
 	if (displayRay)
@@ -172,8 +192,6 @@ void ofApp::TestTwo() {
 	cam.end();
 
 }
-
-
 
 void ofApp::DrawPathlines() {
 	ofSetLineWidth(lineWidth);
@@ -202,7 +220,6 @@ ofPath polysToPath(const vector<ofPolyline> &polylines) {
 void ofApp::DrawPolylines() {
 	ofSetLineWidth(lineWidth);
 
-	
 	// 1st method
 	/*
 	for (int i = 0; i < polyLines.size(); i++) {
@@ -221,7 +238,12 @@ void ofApp::DrawPolylines() {
 
 
 	ofxPolylines result;
+	ofxPolylines lines;
 
+	lines = polyLines;
+
+	if(inverse)
+		std::reverse(polyLines.begin(), polyLines.end());
 
 	for (int i = 0; i < polyLines.size(); i++) {
 
@@ -229,6 +251,7 @@ void ofApp::DrawPolylines() {
 		targetPoly.clear();
 		maskLines.clear();
 		ofPolyline polyline = polyLines.at(i);
+
 
 		// Get all polyLines after : 
 		/*
@@ -257,7 +280,11 @@ void ofApp::DrawPolylines() {
 		ofFill();
 		ofSetColor(bgColor);
 		ofBeginShape();
-		for (int j = 0; j < vertices.size(); j++) {
+
+		if (oneShot)
+			ofSetLineWidth(0);
+
+		for (int j = vertices.size()-1; j>=0 ; j--) {
 			if (oneShot) {
 				ofVec3f v2d = cam.worldToScreen(vertices[j]);
 				ofVertex(v2d.x, v2d.y);
@@ -266,26 +293,29 @@ void ofApp::DrawPolylines() {
 				ofVertex(vertices[j]);
 			}
 		}
+
+		
 		ofEndShape();
 
 
-		//same thing repeted
-		ofNoFill();
-		ofSetColor(fgColor);
-		ofBeginShape();
-		for (int j = 0; j < vertices.size(); j++) {
-			if (oneShot) {
-				ofVec3f v2d = cam.worldToScreen(vertices[j]);
-				ofVertex(v2d.x, v2d.y);
+		if (!oneShot) { // skip
+			//same thing repeted
+			ofNoFill();
+			ofSetColor(fgColor);
+			ofBeginShape();
+			for (int j = 0; j < vertices.size(); j++) {
+				if (oneShot) {
+					ofVec3f v2d = cam.worldToScreen(vertices[j]);
+					ofVertex(v2d.x, v2d.y);
+				}
+				else {
+					ofVertex(vertices[j]);
+				}
 			}
-			else {
-				ofVertex(vertices[j]);
-			}
+			ofEndShape();
 		}
-		ofEndShape();
 	}
 
-	// Create big mask
 
 }
 
@@ -293,6 +323,7 @@ void ofApp::DrawPolylines() {
 void ofApp::DrawLines() {
 
 	mesh.draw();
+	ofDrawBitmapString("DrawLines", ofPoint(500, 20));
 
 	if (displayLines) {
 		ofPushMatrix();
@@ -328,6 +359,227 @@ bool ofApp::PointInTriangle(ofPoint pt, ofPoint v1, ofPoint v2, ofPoint v3)
 	return ((b1 == b2) && (b2 == b3));
 }
 
+
+
+void ofApp::DrawFinalLines() {
+	ofBackground(255);
+	ofNoFill();
+	ofSetLineWidth(1);
+	ofSetColor(0);
+	ofDrawBitmapString("DrawFinalLines" + ofToString(allMaskedLines.size()), ofPoint(500, 20));
+	for each (ofPolyline line in allMaskedLines)
+	{
+		line.draw();
+	}
+}
+
+void ofApp::LinesToCrop() {
+	ofNoFill();
+	ofxPolylines tmpMask;
+	ofxPolylines tmpSubject;
+
+	ofSetLineWidth(1);
+
+	allMaskedLines.clear();
+
+	int start = 0;
+	int end = localPolyLines.size();
+
+	ofLog(OF_LOG_NOTICE, "Calculating for " + ofToString(localPolyLines.size()) + " polylines");
+	tmpMask.clear();
+
+	allMaskedLines.push_back(localPolyLines[end - 1]);
+	tmpMask.push_back(localPolyLines[end - 1]); // adding this one to the mask list
+	
+	for (int i = end - 2; i >= start; i--)
+		//for (int i = idebug; i < idebug+1; ++i)
+	{
+		bool debugDraw = (idebug == i);
+		if(debugDraw)
+		ofBackground(0);
+
+		vector<ofPolyline> newLines;
+
+		allClips.clear();
+		clipper.clear();
+		tmpSubject.clear();
+
+		// selecting only this subject
+		tmpSubject.push_back(localPolyLines[i]);
+
+
+		clipper.clear();
+
+		if (tmpMask.size() > 0) {
+
+			clipper.SimplifyPolylines(tmpMask, OF_POLY_WINDING_NONZERO);
+
+			if (debugDraw) {
+
+				ofSetColor(ofColor::blue, 100);
+				for (int z = 0; z < tmpMask.size(); z++)
+					tmpMask[z].draw();
+			}
+
+			clipper.clear();
+
+			clipper.addPolylines(tmpSubject, OFX_CLIPPER_SUBJECT);
+			clipper.addPolylines(tmpMask, OFX_CLIPPER_CLIP);
+
+		}
+
+		clipper.clip(OFX_CLIPPER_DIFFERENCE, allClips, OF_POLY_WINDING_NONZERO);
+
+
+
+
+		// Ici on dessin les clips = ce qui est a l'extérieur
+		for (int z = 0; z < allClips.size(); z++) {
+			ofSetColor(ofColor(255, 0, 0, 80 * (z + 1)));
+			ofSetLineWidth(1);
+			allClips[z].draw();
+
+			vector<ofPoint> &finalVertices = allClips[z].getVertices();
+
+			ofPolyline tmpNewLine;
+			ofPoint firstPoint = ofPoint(0, 0, 0);
+
+			int firstPointIndex = -1;
+
+			vector<ofPoint> pointsStop;
+			pointsStop.clear();
+
+			bool hasFoundSomething = false;
+
+			//On prends tous les vertex de ces clips
+			for (int numFinalVertices = 0; numFinalVertices < finalVertices.size(); numFinalVertices++) // p == result
+			{
+				bool isFound = false;
+				ofSetColor(ofColor::aqua);
+				//	ofDrawCircle(finalVertices.at(numFinalVertices), 2);
+
+				// On prends tous les masques 
+				for (int x = 0; x < tmpMask.size(); x++) {
+					vector<ofPoint> &maskVertices = tmpMask[x].getVertices();
+					// Puis tous les vertex des masques
+					for (int numMaskVertices = 0; numMaskVertices < maskVertices.size(); numMaskVertices++) // p == result
+					{
+
+						if (!isFound) {
+							if (finalVertices.at(numFinalVertices).distance(maskVertices.at(numMaskVertices)) < 0.005f) { // les points sont superposés
+								ofSetColor(ofColor::pink);
+								//	ofDrawCircle(maskVertices.at(numMaskVertices), 5);
+								isFound = true;
+								hasFoundSomething = true;
+								if (firstPointIndex == -1) {
+									firstPoint = finalVertices.at(numFinalVertices);
+									firstPointIndex = tmpNewLine.size();
+								}
+							}
+							else {
+							}
+						} // else, it's already found so we skip
+					}// end for each maskVertex
+				}
+
+
+
+				if (!isFound) {
+					ofSetColor(ofColor::cadetBlue);
+					tmpNewLine.addVertex(finalVertices.at(numFinalVertices));
+					//	ofDrawBitmapString(ofToString(numFinalVertices), finalVertices.at(numFinalVertices).x+20, finalVertices.at(numFinalVertices).y -10);
+					int s = tmpNewLine.getVertices().size();
+
+					if (s > 1) {
+						float dist = tmpNewLine[s - 1].distance(tmpNewLine[s - 2]);
+						if (dist > 100) {
+							ofLog(OF_LOG_NOTICE, "close " + ofToString(dist));
+							pointsStop.push_back(finalVertices.at(numFinalVertices));
+						}
+					}
+				}
+
+				//	ofDrawBitmapString(ofToString(firstPointIndex), 50, 50);
+
+			}// end for each finalVertex
+
+
+
+			if (!hasFoundSomething)
+				tmpNewLine.close();
+
+
+
+			//	ofLog(OF_LOG_NOTICE, ofToString(firstPointIndex));
+
+			//	ofDrawCircle(firstPoint, 15);
+
+
+			if (firstPointIndex >= 0 && firstPointIndex < tmpNewLine.size()) {
+				ofPolyline orderedTmpNewLine;
+				std::rotate(tmpNewLine.getVertices().begin(), tmpNewLine.getVertices().begin() + firstPointIndex, tmpNewLine.getVertices().end());
+				//	ofDrawCircle(tmpNewLine[firstPointIndex], 10);
+			}
+
+
+
+			ofPolyline lineNew;
+			if (pointsStop.size() >= 1) {
+				ofPolyline tmp;
+
+				for (auto & vertex : tmpNewLine.getVertices()) {
+					bool isStopped = false;
+					for (int pV = 0; pV < pointsStop.size(); pV++) {
+						if (!isStopped) {
+							if (vertex.distance(pointsStop[pV]) < 0.01f) {
+								isStopped = true;
+							}
+						}
+					}
+					if (isStopped) {
+						newLines.push_back(tmp);
+						tmp.clear();
+						tmp.addVertex(vertex);
+					}
+					else {
+						tmp.addVertex(vertex);
+					}
+				}
+				newLines.push_back(tmp);
+			}
+			else {
+				newLines.push_back(tmpNewLine);
+			}
+
+
+
+			//	newLines.push_back(lineNew);
+
+
+
+		} // End for each clip
+
+
+
+
+		ofSetColor(ofColor::beige);
+
+		ofLog(OF_LOG_NOTICE, "For indice " + ofToString(i) + " there are" + ofToString(newLines.size()) + "sublines");
+
+		for each (ofPolyline line in newLines)
+		{
+			if (debugDraw)
+				line.draw();
+			allMaskedLines.push_back(line);
+		}
+
+		tmpMask.push_back(localPolyLines[i]); // adding this one to the mask list
+
+
+	}
+
+
+}
 
 
 /*
@@ -373,6 +625,12 @@ inline unsigned int s3dVecInTriangle3f2(S3Dvecfv p, ofVec3f v0, S3Dvecfv v1, S3D
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
+
+
+	if (key == 'w')
+		idebug--;
+	else if (key == 'x')
+		idebug++;
 
 	if (key == 's') {
 		oneShot = true;
@@ -451,15 +709,62 @@ void ofApp::onButtonEvent(ofxDatGuiButtonEvent e)
 			break;
 		}
 	}
-	else if (e.target->getLabel() == "Local")
+	else if (e.target->getLabel() == "Local") {
+
 		ConvertWorldToLocalPolyLines();
+		LinesToCrop();
+	}
 	else if (e.target->getLabel() == "World")
 		toPolyline = false;
+	else if (e.target->getLabel() == "CreateMask")
+		CreateMask();
+	else if (e.target->getLabel() == "Calculate Final")
+		LinesToCrop();
+	else if (e.target->getLabel() == "Draw Final")
+		displayCrop = !displayCrop;
+	else if (e.target->getLabel() == "Save")
+		Save();
+	else if (e.target->getLabel() == "Load")
+		Load();
 
-	
 }
 
+void ofApp::Save() {
 
+
+	settings.setValue("settings:startX", startX);
+	settings.setValue("settings:startY", startY);
+	settings.setValue("settings:nRayX", nRayX);
+	settings.setValue("settings:nRayY", nRayY);
+	settings.setValue("settings:spacingX", spacingX);
+	settings.setValue("settings:spacingY", spacingY);
+	settings.setValue("settings:simplifySkip", simplifySkip);
+	settings.setValue("settings:distOffset", distOffset);
+
+	ofxSaveCamera(cam, "ofEasyCamSettings");
+
+	settings.saveFile("settings.xml"); 
+}
+
+void ofApp::Load() {
+	settings.loadFile("settings.xml");
+
+	ofxLoadCamera(cam, "ofEasyCamSettings");
+
+
+	startX = settings.getValue("settings:startX", startX);
+	startY =settings.getValue("settings:startY", startY);
+	nRayX =settings.getValue("settings:nRayX", nRayX);
+	nRayY =settings.getValue("settings:nRayY", nRayY);
+	spacingX =settings.getValue("settings:spacingX", spacingX);
+	spacingY =settings.getValue("settings:spacingY", spacingY);
+	simplifySkip =settings.getValue("settings:simplifySkip", simplifySkip);
+	distOffset =settings.getValue("settings:distOffset", distOffset);
+}
+
+void ofApp::CreateMask() {
+
+}
 
 void ofApp::onColorPickerEvent(ofxDatGuiColorPickerEvent e) {
 	if (e.target->getLabel() == "Background") {
@@ -570,7 +875,9 @@ void ofApp::GeneratePolylines() {
 		}
 
 		tempLine.addVertex(lastHit.x, -distOffset, lastHit.z + distOffset);
-		tempLine.close();
+		//tempLine.close();
+		tempLine.addVertex(tempLine.getVertices().at(0));
+
 		polyLines.push_back(tempLine); // end tmp line
 
 	} // end x loop
@@ -582,12 +889,12 @@ void ofApp::GeneratePolylines() {
 void ofApp::ConvertWorldToLocalPolyLines() {
 	localPolyLines.clear();
 	for (int i = 0; i < polyLines.size(); i++) {
-
 		ofPolyline polyline;
 		for (auto & vertex : polyLines.at(i).getVertices()) {
 			polyline.addVertex(cam.worldToScreen(vertex));
-			ofLog(OF_LOG_NOTICE, ofToString(cam.worldToScreen(vertex)));
 		}
+
+		//polyline.addVertex(polyLines.at(i).getVertices().at(0));
 		polyline.close();
 		localPolyLines.push_back(polyline);
 	}
@@ -690,7 +997,6 @@ void ofApp::onToggleEvent(ofxDatGuiToggleEvent e)
 	else if (e.target->getLabel() == "DrawMesh")
 		drawMesh = e.target->getChecked();
 
-	
 }
 
 void ofApp::onSliderEvent(ofxDatGuiSliderEvent e)
